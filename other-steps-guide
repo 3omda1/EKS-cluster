@@ -1,0 +1,69 @@
+To allow the development team to deploy and rollback Kubernetes resources but restrict them from running certain commands, we can use Kubernetes Role-Based Access Control (RBAC) to manage access to the Kubernetes cluster.
+Here is a RBAC Role that allows deployment and rollback of resources but restricts access to certain commands.
+kind: Role
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  namespace: default
+  name: deployer-role
+rules:
+- apiGroups: ["apps", "extensions", ""]
+  resources: ["deployments", "replicasets", "pods"]
+  verbs: ["create", "delete", "patch", "update", "get", "list", "watch", "rollback"]
+- apiGroups: [""]
+  resources: ["services", "configmaps", "secrets"]
+  verbs: ["get", "list", "watch"]
+
+
+Create a Kubernetes ServiceAccount for the development team:
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: deployer
+  namespace: default
+
+
+Bind the RBAC Role to the ServiceAccount:
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: deployer-rolebinding
+  namespace: default
+subjects:
+- kind: ServiceAccount
+  name: deployer
+  namespace: default
+roleRef:
+  kind: Role
+  name: deployer-role
+  apiGroup: rbac.authorization.k8s.io
+
+Now, the development team can use the "deployer" ServiceAccount to deploy and rollback resources in the default namespace, but they will be restricted from running certain commands.
+
+
+--------------------------------------------------------------------------------------------------------------------------------
+Bonus:
+To apply the configs to multiple environments, such as staging and production, you could use Kubernetes' namespaces to separate the resources and configurations for each environment. You could create a namespace for staging and a namespace for production, and then apply the same YAML files to both namespaces with different configurations for each environment.
+AS shown below:
+1 - Create a namespace for staging:
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: staging
+
+
+2 - Create a namespace for production:
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: production
+
+3 - Apply the YAML files for the deployments, HPA, and RBAC to both namespaces:
+kubectl apply -f deployment.yaml -n staging
+kubectl apply -f deployment.yaml -n production
+
+kubectl apply -f hpa.yaml -n staging
+kubectl apply -f hpa.yaml -n production
+
+kubectl apply -f rbac.yaml -n staging
+kubectl apply -f rbac.yaml -n production
+--------------------------------------------------------------------------------------------------------------------------------
