@@ -2,8 +2,7 @@
 
 ## Steps-by-step guide for creating auto-scaling Kubernetes cluster on AWS
 1. Get access key and secret from security credentials under my account menu
- - aws configure 
-put access key, secret and your default region (us-east-1 in our case)
+ - aws configure . put access key, secret and your default region (us-east-1 in our case)
 2. Create VPC for worker nodes from cloud formation service
 S3 bucket link
 https://s3.us-west-2.amazonaws.com/amazon-eks/cloudformation/2020-10-29/amazon-eks-vpc-private-subnets.yaml
